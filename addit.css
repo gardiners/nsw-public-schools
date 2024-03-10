@@ -1,0 +1,7 @@
+.datatables.html-widget.html-widget-static-bound { 
+  height: auto !important;
+  width: 90vw !important;
+}
+.dataTables_scrollBody {
+  height: unset !important;
+}

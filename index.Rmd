@@ -1,0 +1,93 @@
+---
+title: "NSW public school locations"
+output: 
+  flexdashboard::flex_dashboard:
+    theme:
+      bg: "#ffffff"
+      fg: "#002664" 
+      primary: "#002664"
+      base_font:
+        google: Public Sans
+      code_font:
+        google: JetBrains Mono
+      font_scale: 0.75
+    orientation: columns
+    vertical_layout: fill
+  css: addit.css
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(crosstalk)
+library(leaflet)
+library(tidyverse)
+library(sf)
+library(DT)
+```
+
+```{r data-setup}
+schools <- read_csv("data/20240310_master_dataset.csv",
+                    name_repair = janitor::make_clean_names) |>
+  st_as_sf(coords = c("longitude", "latitude"),
+           crs = "WGS84") |>
+  select(school_name, level_of_schooling, principal_network, operational_directorate) |>
+  mutate(across(c(level_of_schooling, principal_network, operational_directorate), factor)) |>
+  arrange(school_name) |>
+  SharedData$new()
+```
+Column {data-width=600 .tabset}
+-----------------------------------------------------------------------
+
+### Locations 
+
+```{r school-locations}
+leaflet(schools) |>
+  addProviderTiles("CartoDB.Positron") |>
+  addMarkers(
+    label = ~school_name,
+    clusterOptions = markerClusterOptions(
+      # Don't colour code the clusters; use the default class for the smallest
+      # cluster
+      iconCreateFunction = JS(
+        "function (cluster) {
+		      var childCount = cluster.getChildCount();
+		      return new L.DivIcon({ html: '<div><span>' + childCount + '</span></div>', className: 'marker-cluster marker-cluster-small', iconSize: new L.Point(40, 40) });
+	      }")
+    ))
+```
+
+### About {.tabset}
+
+- This web page is not a product of the NSW Department of Education, and has not been endorsed by the department in any fashion. 
+- School location and other data is from the [NSW Department of Education master dataset](https://data.cese.nsw.gov.au/data/dataset/nsw-public-schools-master-dataset), used under the [Creative Commons cc-by licence](https://opendefinition.org/licenses/cc-by/).
+
+Column {data-width=400 .tabset}
+-----------------------------------------------------------------------
+
+### Schools
+
+::: {style="width: 95%; height: 100%"}
+
+```{r school-table}
+datatable(
+  schools,
+  style = "auto",
+  class = "compact",
+  rownames = FALSE,
+  colnames = c("School" = "school_name",
+               "Level of schooling" = "level_of_schooling",
+               "Principal network" = "principal_network",
+               "Operational directorate" = "operational_directorate"),
+  height = "fit-content",
+  options = list(
+    autoWidth = TRUE, 
+    scrollX = FALSE,
+    columnDefs = list(
+      list(width = "25%",
+           targets = 1:4),
+      # Don't try to print geometry
+      list(visible = FALSE,
+           targets = 4))))
+```
+
+:::
