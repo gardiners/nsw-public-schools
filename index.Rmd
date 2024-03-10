@@ -45,7 +45,10 @@ leaflet(schools) |>
   addProviderTiles("CartoDB.Positron") |>
   addMarkers(
     label = ~school_name,
+    clusterId = ~principal_network,
     clusterOptions = markerClusterOptions(
+      disableClusteringAtZoom = 13,
+      spiderfyOnMaxZoom = FALSE,
       # Don't colour code the clusters; use the default class for the smallest
       # cluster
       iconCreateFunction = JS(
@@ -53,7 +56,12 @@ leaflet(schools) |>
 		      var childCount = cluster.getChildCount();
 		      return new L.DivIcon({ html: '<div><span>' + childCount + '</span></div>', className: 'marker-cluster marker-cluster-small', iconSize: new L.Point(40, 40) });
 	      }")
-    ))
+    )) |>
+  addMiniMap(
+    zoomLevelFixed = 4,
+    autoToggleDisplay = TRUE,
+    tiles = providers$CartoDB.PositronNoLabels
+  )
 ```
 
 ### About {.tabset}
