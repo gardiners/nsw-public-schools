@@ -35,6 +35,7 @@ schools <- read_csv("data/20240310_master_dataset.csv",
   arrange(school_name) |>
   SharedData$new()
 ```
+
 Column {.tabset}
 -----------------------------------------------------------------------
 
